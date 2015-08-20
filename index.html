@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#" xmlns:fb="https://www.facebook.com/2008/fbml">
+
+<head>
+	<title>Omron Hostlink Protocol Generator</title>
+
+	<meta name="keywords" content="omron,hostlink,protocol,generator,host,link">
+	<meta name="description" content="we help to generate omron hostlink protocol for communication over serial links,included FCS calculator and BCC Calculator">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="google-site-verification" content="FlWg5Oxi6jr23tuxYPGNqWITbip7c5xUI0-hk02xD8o" />
+
+	<link href="omron.png" rel="icon" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="http://code.jquery.com/mobile/latest/jquery.mobile.min.css" rel="stylesheet" type="text/css" media="screen" />
+
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="http://code.jquery.com/mobile/latest/jquery.mobile.min.js"></script>
+
+	<style>
+		@media all and (max-width: 35em) {
+			.my-breakpoint .ui-block-a, .my-breakpoint .ui-block-b {
+				width: 100%;
+				float: none;
+			}
+			.ui-reponsive .ui-block-a,
+			.ui-reponsive .ui-block-b,
+			.ui-reponsive .ui-block-c {
+				width: 100%;
+				float: none;
+			}
+			.ui-reponsive .ui-block-a,
+			.ui-reponsive .ui-block-b,
+			.ui-reponsive .ui-block-c {
+				padding: 10px;
+			}
+		}
+		@media all and (min-width: 45em) {
+			.my-breakpoint.ui-grid-a .ui-block-a {
+				width: 20%;
+			}
+			.my-breakpoint.ui-grid-a .ui-block-b {
+				width: 80%;
+			}
+			.ui-reponsive.ui-grid-a .ui-block-a {
+				width: 50%;
+			}
+			.ui-reponsive.ui-grid-a .ui-block-b {
+				width: 50%;
+			}
+			.ui-reponsive .ui-block-a,
+			.ui-reponsive .ui-block-b,
+			.ui-reponsive .ui-block-c {
+				padding: 5px;
+			}
+		}
+		#googleadsense {
+			margin: 0 auto;
+		}
+	</style>
+
+	<script>
+		$(document).ready(function() {
+
+			function decimalToHex(d, padding) {
+				var hex = Number(d).toString(16);
+				padding = typeof(padding) === "undefined" || padding === null ? padding = 2 : padding;
+
+				while (hex.length < padding) {
+					hex = "0" + hex;
+				}
+
+				return hex.toUpperCase();
+			}
+
+			function FCS(str) {
+
+				var result;
+				for (var i = 0; i < str.length; i++) {
+					//alert(str.charCodeAt(i).toString(2));
+					result = result ^ str.charCodeAt(i);
+
+				}
+				//alert(result);
+				return decimalToHex(result, 2);
+
+			}
+
+			function BCC(str) {
+
+				var result = 0;
+				for (var i = 0; i < str.length; i++) {
+					//alert(str.charCodeAt(i).toString(2));
+					result = result ^ str.charCodeAt(i);
+
+				}
+				//alert(result);
+				return String.fromCharCode(result);
+
+			}
+
+			$("#group1").show();
+			$("#group2").hide();
+
+			$("#select-cmd").change(function() {
+
+				var cmd = $("#select-cmd").val();
+				if (cmd == "KS" || cmd == "KR") {
+					$("#group1").hide();
+					$("#group2").show();
+				} else {
+					$("#group1").show();
+					$("#group2").hide();
+				}
+
+				if (cmd == "RD") {
+					$("#text-param").removeAttr("disabled");
+					$("#text-param").attr("placeholder", "00000000");
+					$("#text-help").text("Beginning Word (0000-9999) + No. of Words (0001-10000)");
+				}
+
+				if (cmd == "WD") {
+					$("#text-param").removeAttr("disabled");
+					$("#text-param").attr("placeholder", "00000000");
+					$("#text-help").text("Beginning Word (0000-9999) + Write data (1 to # word)");
+				}
+
+				if (cmd == "MS") {
+					$("#text-param").val("");
+					$("#text-param").removeAttr("placeholder");
+					$("#text-param").attr("disabled", "disabled");
+					$("#text-help").text("No Parameter");
+				}
+
+				if (cmd == "SC") {
+					$("#text-param").removeAttr("disabled");
+					$("#text-param").attr("placeholder", "00");
+					$("#text-help").text("00:Program Mode | 02:Monitor Mode | 03:Run Mode");
+				}
+
+				if (cmd == "RR") {
+					$("#text-param").removeAttr("disabled");
+					$("#text-param").attr("placeholder", "00000000");
+					$("#text-help").text("Beginning Word (0000-0511) + No. of Words (0001-0512)");
+				}
+
+				if (cmd == "WR") {
+					$("#text-param").removeAttr("disabled");
+					$("#text-param").attr("placeholder", "00000000");
+					$("#text-help").text("Beginning Word (0000-0511) + Write data (1 to # word)");
+				}
+
+				if (cmd == "KS") {
+					$("#text-param-2").removeAttr("disabled");
+					$("#text-param-2").attr("placeholder", "000000");
+					$("#text-help").text("Operand(####) + Word address(####) + Bits(##)");
+				}
+
+				if (cmd == "KR") {
+					$("#text-param-2").removeAttr("disabled");
+					$("#text-param-2").attr("placeholder", "000000");
+					$("#text-help").text("Operand(####) + Word address(####) + Bits(##)");
+				}
+
+			});
+
+
+			$("#text-str").change(function() {
+
+				// get user input string
+				var textstr = $("#text-str").val();
+				$("#text-fcs").val(FCS(textstr));
+				$("#text-result").val(textstr + FCS(textstr) + "*(CrLf)");
+				//alert(String.fromCharCode(textstr));
+			});
+
+			$("#text-str-bcc").change(function() {
+
+				// get user input string
+				var textstr = $("#text-str-bcc").val();
+				$("#text-bcc").val(BCC(textstr));
+				$("#text-result-bcc").val(textstr + BCC(textstr));
+				//alert(String.fromCharCode(textstr));
+			});
+
+			$("#text-node,#select-cmd,#text-param").change(function() {
+
+				var node = $("#text-node").val();
+				var cmd = $("#select-cmd").val();
+				var param = $("#text-param").val();
+				var tmpcmd = "@" + node + cmd + param;
+				$("#protocol").val("@" + node + cmd + param + FCS(tmpcmd) + "*(CrLf)");
+
+			});
+
+			$("#select-operand").change(function() {
+
+				var node = $("#text-node").val();
+				var cmd = $("#select-cmd").val();
+				var operand = $("#select-operand").val();
+				var param = $("#text-param-2").val();
+				var tmpcmd = "@" + node + cmd + operand + param;
+				$("#protocol").val("@" + node + cmd + operand + param + FCS(tmpcmd) + "*(CrLf)");
+
+			});
+
+			$("#text-param-2").change(function() {
+
+				var node = $("#text-node").val();
+				var cmd = $("#select-cmd").val();
+				var operand = $("#select-operand").val();
+				var param = $("#text-param-2").val();
+				var tmpcmd = "@" + node + cmd + operand + param;
+				$("#protocol").val("@" + node + cmd + operand + param + FCS(tmpcmd) + "*(CrLf)");
+
+			});
+
+		})
+	</script>
+
+</head>
+
+<body>
+
+	<div data-role="page" data-theme="b">
+
+		<div data-role="header" data-theme="b">
+			<h1>Omron Hostlink Protocol</h1>
+		</div>
+		<!-- /header -->
+
+		<div data-role="content" data-theme="b">
+			<div class="ui-grid-a ui-reponsive">
+
+				<div class="ui-block-a">
+					<fieldset data-collapsed="true" data-role="collapsible" data-theme="a" data-content-theme="d" data-collapsed-icon="arrow-d" data-expanded-icon="arrow-u">
+						<legend>FCS (Frame Checksum) Calc</legend>
+						<label for="text-str">String :</label>
+						<input type="text" name="text-str" id="text-str" value="" placeholder="Input here,ex:@00RD01000001">
+
+						<label for="text-fcs">Frame Checksum :</label>
+						<input type="text" name="text-fcs" id="text-fcs" value="">
+
+						<label for="text-result">Host Link Command :</label>
+						<input type="text" name="text-result" id="text-result" value="">
+
+
+					</fieldset>
+				</div>
+				<div class="ui-block-b">
+					<fieldset data-role="collapsible" data-theme="a" data-content-theme="d" data-collapsed-icon="arrow-d" data-expanded-icon="arrow-u">
+						<legend>Host Link Command Generator</legend>
+
+						<label for="text-node">Node No :</label>
+						<input type="text" name="text-node" id="text-node" value="00">
+
+						<label for="select-cmd" class="select">Commands</label>
+						<select name="select-cmd" id="select-cmd">
+							<option value="RD">RD-Read DM</option>
+							<option value="WD">WD-Write DM</option>
+							<option value="MS">MS-Read Mode Status</option>
+							<option value="SC">SC-Write Mode Status</option>
+							<option value="KS">KS-Forced Set</option>
+							<option value="KR">KR-Forced Reset</option>
+							<option value="RR">RR-Read Channel Status</option>
+							<option value="WR">WR-Write Channel Status</option>
+						</select>
+
+						<div id="group1">
+
+							<label for="text-param">Parameter :</label>
+							<input data-clear-btn="true" type="text" name="text-param" id="text-param" value="" placeholder="00000000">
+
+						</div>
+						<div id="group2" class="ui-grid-a my-breakpoint">
+
+							<div class="ui-block-a">
+								<label for="select-operand" class="select">Operand</label>
+								<select data-inline="true" name="select-operand" id="select-operand">
+									<option value="CIO ">CIO</option>
+									<option value="LR  ">LR</option>
+									<option value="HR  ">HR</option>
+									<option value="AR  ">AR</option>
+									<option value="TIM ">TIM</option>
+									<option value="TIMH">TIMH</option>
+									<option value="CNT ">CNT</option>
+									<option value="CNTR">CNTR</option>
+									<option value="TTIM">TTIM</option>
+									<option value="TN  ">TN</option>
+								</select>
+							</div>
+							<div class="ui-block-b">
+								<label for="text-param-2">Parameter :</label>
+								<input data-inline="true" data-clear-btn="true" type="text" name="text-param-2" id="text-param-2" value="" placeholder="">
+							</div>
+
+
+						</div>
+						<span id="text-help">Beginning Word (0000-9999) + No. of Words (0001-10000)</span>
+						<br/>
+						<br/>
+						<label for="protocol">Host Link Command :</label>
+						<input type="text" name="protocol" id="protocol" value="@*(CrLf)">
+					</fieldset>
+				</div>
+
+				<div class="ui-block-c">
+					<fieldset data-collapsed="true" data-role="collapsible" data-theme="a" data-content-theme="d" data-collapsed-icon="arrow-d" data-expanded-icon="arrow-u">
+						<legend>BCC (Block Check Character)</legend>
+						<label for="text-str-bcc">String :</label>
+						<input type="text" name="text-str-bcc" id="text-str-bcc" value="" placeholder="Input here ... ">
+
+						<label for="text-bcc">Block Check Character :</label>
+						<input type="text" name="text-bcc" id="text-bcc" value="">
+
+						<label for="text-result-bcc">Command with BCC :</label>
+						<input type="text" name="text-result-bcc" id="text-result-bcc" value="">
+
+
+					</fieldset>
+				</div>
+				* you must convert (CrLf) to your system accordingly
+			</div>
+			<center>
+				<div style="padding:10px;">
+
+					<!-- AddThis Button BEGIN -->
+
+					<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+					<a class="addthis_button_tweet"></a>
+					<a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
+					<a class="addthis_counter addthis_pill_style"></a>
+
+					<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=undefined"></script>
+					<!-- AddThis Button END -->
+				</div>
+
+				<div id="googleadsense">
+					<script type="text/javascript">
+						<!--
+						google_ad_client = "ca-pub-6575727990565052";
+						/* 234x60 Half Banner Classic Grey */
+						google_ad_slot = "8254398249";
+						google_ad_width = 234;
+						google_ad_height = 60;
+						 //-->
+					</script>
+					<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+					</script>
+					<br/>
+					<div>
+						<img height="40px" src="android.png" alt="android-logo" />
+						<a data-ajax="false" href="HostlinkGenerator.apk">Download Android Version</a>
+						<br/>
+						<span style="font-size:10px"><img align="absmiddle" height="16" width="16" alt="email" src="http://cdn1.iconfinder.com/data/icons/Hand_Drawn_Web_Icon_Set/128/email.png" /> <a href="https://github.com/xkid/Omron-Hostlink-Command-Generator/issues">Report Issues</a> </span>
+					</div>
+
+				</div>
+			</center>
+		</div>
+		<!-- /content -->
+
+		<div data-role="footer" data-theme="b">
+			<h3>Develop by XKID &copy 2013</h3>
+		</div>
+		<!-- /footer chchin@elcomp.com.my -->
+
+	</div>
+	<!-- /page -->
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-8999578-15']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script');
+			ga.type = 'text/javascript';
+			ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0];
+			s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+</body>
+
+</html>
